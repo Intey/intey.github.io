@@ -1,0 +1,254 @@
+---
+layout: post
+title: "За что я полюбил ФП и Clojure в частности"
+date: 2016-1-29
+categories: experimental
+draft: true
+---
+
+# Работа с map/hash-map/dict
+В ООП, когда появляется необходимость определить набор данных, пишется класс.
+Таким образом, мы соединяем вместе кучку переменных и гордо называем классом.
+Потом же эта гордость оправдывается, когда этот сброд, получает пристройку в
+виде функции, которая выполняет над ними какую-то магию и возможно даже что-то
+выдает как результат. Все становится еще круче, когда появляется наследование и
+полиморфизм. Однако до наследования не всегда доходит, в большинстве
+случаев(чуть больше, чем в половине) мы имеем просто кучку данных и функции к
+ним, которые сшиты вместе. Это чем-то напоминает функции с состоянием.
+
+# Подлый пример
+## ТЗ
+Допустим, стоит задача, имея список пользователей и функцию оценки активности
+конкретного юзера, подготовить отчет в виде CSV. CSV - ну потому что удобно и в
+БД сунуть и в Excel на первых парах, что начать некий сферический в вакууме
+анализ.
+
+Функция оценки принимает пользователя и возвращает набор данных
+активности. Пусть это будет класс для случая ООП, и хеш-мап для ФП.
+
+Что будем делать в ООП? Зададимся вопросом возвращаемого значения: если нужны просто значения:
+
+{% highlight cpp %}
+std::vector<Activity> report(std::vector<User> users) {
+    std::vector<Activity> res;
+    for (auto u: users) {
+        res.push_back(func(u));
+    }
+    return res;
+}
+{% endhighlight %}
+
+Ничего сложного. Но, если нас просят расширить данные пользователя, той самой
+статистикой, а значит на выход надо отдать как данные пользователя, так и
+данные активности. Здесь, не забывая, что надо бы сделать гибко, надо думать о
+чем-то в духе:
+
+{% highlight cpp %}
+class UserActivity: public User {
+public:
+    UserActivity(User u): User(u) {
+        m_activ = func(u);
+    }
+private:
+    Activity m_activ;
+};
+
+std::vector<UserActivity> report(std::vector<User> users) {
+    std::vector<UserActivity> res;
+    for (auto u: users) {
+        res.push_back(UserActivity(u));
+    }
+    return res;
+}
+{% endhighlight %}
+
+Ну вот. Если меняется `User`, мы сами меняемся, если меняется функция - тоже
+все ок.  Однако класс `Activity` может отсутствовать, как и функция. Тогда нам
+придется все это делать самим.
+
+{% highlight cpp %}
+class Activity {
+public:
+    Activity(int v, std::string s, double d) {
+        // okey...
+    }
+private:
+    int val;
+    std::string okok;
+    double hey;
+};
+
+Activity calcActivity(User u) {
+    // some long calcs, create v,s,d.
+    return Activity(v, s, d);
+}
+{% endhighlight %}
+
+Собственно в чем проблема? да ни в чем вроде бы. Пока я на ходу придумывал этот
+пример я сменил `struct` на `class`, что бы можно было инициализировать пачкой
+значений. И я пожалел, использовал только 3. Если их 100500?
+
+> Разделяй и влавствуй
+
+Да, верно, подумаем на счет того как все это разделить объединяя по
+связанности(общости смысла) но делая все не связанно(каждый знает о других
+минимум), запилим еще пачку классов и будет жить. Даже не _вроде бы_ а будет.
+
+Продолжим вакханалию. Нужно поддерживать оба варианта: выдачу отчета отдельно
+с данными о пользователе и без них. Появление такой задачи может аккурат
+намекнуть на появление еще одного типа отчета. Добавить гибкости что ли?
+
+{% highlight cpp %}
+class Activity {
+    public:
+        Activity(User u) {
+            // some long calcs, create v,s,d.
+            val = v;
+            okok = s;
+            hey = d;
+        }
+    private:
+        int val;
+        std::string okok;
+        double hey;
+};
+
+class UserActivity: public User {
+    public:
+        UserActivity(User u): User(u) {
+            m_activ = Activity(u);
+        }
+    private:
+        Activity m_activ;
+};
+
+template <typename Type>
+std::vector<Type> report(std::vector<User> users) {
+    std::vector<Type> res;
+    for (auto u: users) {
+        res.push_back(Type(u));
+    }
+    return res;
+}
+{% endhighlight %}
+
+А было бы круто. Вот только оно не скомпилится, потому что перегрузки по
+возвращаемому значению нету. Эх, придется...
+
+{% highlight cpp %}
+// change parant
+class UserActivity: public Activity {
+    public:
+        UserActivity(User u): m_user(u) { }
+    private:
+        User m_user;
+};
+
+std::vector<Activity> report(std::vector<User> users, bool full) {
+    std::vector<Activity> res;
+    for (auto u: users) {
+        if (full)
+            res.push_back(UserActivity(u));
+        else
+            res.push_back(Activity(u));
+    }
+    return res;
+}
+{% endhighlight %}
+
+Чувствуете появляение вереницы if..elseif...elseif..? На первых порах сойдет,
+но на 4 типе репорта надо будет менять:
+
+{% highlight cpp %}
+// change parant
+class UserActivity: public Activity {
+    public:
+        UserActivity(User u): m_user(u) { }
+    private:
+        User m_user;
+};
+
+
+class ActivityFactory {
+public:
+    enum class Type {
+        ACTIVITY,
+        USERACTIVITY,
+        LEGACYACTIVITY
+    };
+    Activity createActivity(User u, Type t){
+        // if...elseif...else...
+    }
+};
+
+std::vector<Activity> report(std::vector<User> users, Activity::Type type) {
+    std::vector<Activity> res;
+    for (auto u: users) {
+        res.push_back(ActivityFactory::createActivity(u, type));
+    }
+    return res;
+}
+
+{% endhighlight %}
+Прячем этот `switch` в факторку и там занимаемся созданием. Немного лучше.
+Я специально писал на псевдо-С++, что бы не совсем взрывать мозг.
+Все получилось связанным карабельным троссом.
+Наверно можно как-то проще сделать.
+
+---
+
+# KISS
+Но есть чуть-чуть проще решение, правда в другой парадигме:
+
+{% highlight clojure %}
+(defn calc-activity [ user ]
+    ;; some long calcs, create v,s,d.
+    {:val v :okok s :hey d})
+{% endhighlight %}
+
+Просто возвращаем хеш-мап. Никаких конструкторов, инкапсуляции и прочего.
+Взяли данные и вернули.
+
+{% highlight clojure %}
+(defn report [ user ]
+    {user (calc-activity user)})
+
+(map report users)
+{% endhighlight %}
+
+Вернем хэш-мап. И мы получили результат без всяких технических абстракций в
+виде классов. Мы просто взяли одни данные, создали на их основе другие и
+соединили один к одному. Ключевое слово `map` делает вот это
+
+{% highlight cpp %}
+std::vector<Activity> ret;
+for (auto u: users)
+    ret.push_back(calc-activity(u));
+}
+return ret;
+{% endhighlight %}
+
+Вот только ей не нужены классы `User` и `Activity`. Класс это хеш-мап в
+кложуре. Ладно, ладно. Если сильно хочется...
+
+# Правильная доля ООП в Clojure
+
+{% highlight clojure %}
+(defrecord User [ username email ])
+{% endhighlight %}
+
+Создаст "запись", в некотором смысле тип. По использованию - хеш-мап. Просто
+именованный хеш-мап. Вот вам класс. С записями работают протоколы и мы получаем
+некоторое подобие ООП, но только на уровне интерфейсов. То к чему мы так
+отчаянно стремимся в ООП.
+
+{% highlight clojure %}
+(defprotocol DomainCalcs
+    (calc-activity [ user ]))
+(extend-type User
+    DomainCalcs
+    (calc-activity [ this ] (emails-per-day (:email this))))
+{% endhighlight %}
+
+
+
