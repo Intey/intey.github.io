@@ -2,7 +2,7 @@
 layout: post
 title: "JS тесты для Continuous Integration в Django"
 date: 2016-5-4
-categories: pyhton, JS, CI, CD, TDD
+categories: dev, pyhton, JS, CI, CD, TDD
 ---
 
 ## Idea
