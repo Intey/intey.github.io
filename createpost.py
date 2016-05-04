@@ -1,8 +1,12 @@
 #!/usr/bin/python3.5
+"""
+Usage:
+    createpost.py TITLE
+"""
 
 from subprocess import call
 from datetime import datetime as d
-import sys
+from docopt import docopt
 
 
 def write_to_file(path, lines):
@@ -11,11 +15,9 @@ def write_to_file(path, lines):
     file.close()
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Supply name of post")
-        exit(1)
+    args = docopt(__doc__, version="0.1")
 
-    post = sys.argv[-1]
+    post = args['TITLE']
 
     now = d.now()
     date_str = "{0}-{1}-{2}".format(now.year, now.month, now.day)
