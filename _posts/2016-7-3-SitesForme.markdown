@@ -21,7 +21,7 @@ categories: experimental
 Сделать такое просто до нельзя, ибо "сырцы" разметки у нас на руках.
 
 {% highlight javascript %}
-var sidebar =document.querySelector('.book-summary')
+var sidebar = document.querySelector('.book-summary')
 var book = document.querySelector('.book-body')
 var visible = (s.style.display!=="none")
 if ( visible ) {
