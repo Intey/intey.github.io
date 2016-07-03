@@ -2,7 +2,7 @@
 layout: post
 title: "Layout чужого сайта под себя"
 date: 2016-7-3
-categories: comfort, js
+categories: comfort js
 ---
 Уже пару лет у меня есть вкладочка fixes в Chrom(ium). В ней лежат короткие
 скрипты-хардкоды под определенные сайты. Идея проста: в моих тайлах оконного

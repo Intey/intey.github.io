@@ -2,7 +2,7 @@
 layout: post
 title: "Continuous Delivery"
 date: 2016-5-4
-categories: dev, pyhton, JS, CI, CD, TDD
+categories: dev pyhton JS CI CD TDD
 ---
 
 ## Idea

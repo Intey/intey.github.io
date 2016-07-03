@@ -2,7 +2,7 @@
 layout: post
 title: "Мне нравятся декораторы"
 date: 2016-2-17
-categories: python, FP
+categories: python FP
 ---
 
 ## Декораторы
