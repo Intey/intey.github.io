@@ -71,7 +71,7 @@ xclip использовать его. Иначе он сунет в primary, к
 `.book-summary` и `.book-body`.
 
 И тут я задумался о том, что хорошо бы иметь на этот случай хоткей.
-Первые же поиски привели к [Shortcut Manager](ttps://chrome.google.com/webstore/detail/shortcut-manager/mgjjeipcdnnjhgodgjpfkffcejoljijf).
+Первые же поиски привели к [Shortcut Manager](https://chrome.google.com/webstore/detail/shortcut-manager/mgjjeipcdnnjhgodgjpfkffcejoljijf).
 
 Данный скрипт втолкнулся в хоткей <kbd>Alt-h</kbd>. К тому же этот парень может
 ограничить хоткей по сайту: на одном <kbd>Alt-h</kbd> - это скрипт выше, на
