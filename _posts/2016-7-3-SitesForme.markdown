@@ -39,5 +39,5 @@ if ( visible ) {
 тоже фиксить.
 
 И тут я задумался о том, что хорошо бы иметь на этот случай хоткей.
-Первые же поиски привели к [Shortcut Manager](ttps://chrome.google.com/webstore/detail/shortcut-manager/mgjjeipcdnnjhgodgjpfkffcejoljijf/related?hl=en-US).
+Первые же поиски привели к [Shortcut Manager](ttps://chrome.google.com/webstore/detail/shortcut-manager/mgjjeipcdnnjhgodgjpfkffcejoljijf).
 Данный скрипт втолкнулся в хоткей <kbd>Alt-h</kbd>. А все потому что Vim.
