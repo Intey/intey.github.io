@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "TDD Save Lifes"
-date: 2016-7-11
-categories: TDD
+date: 2016-07-11
+categories: tdd
 ---
 
 # Как тестирование спасаем мои нервы
